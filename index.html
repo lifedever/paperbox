@@ -318,11 +318,11 @@ const LINKS = { xianyu: "" };
 //    按钮不挂真实 href/download —— 否则版本没取到时点击会把网页本身存成 .html。
 //    平台检测是同步的，只有「取哪个版本」需要联网。──
 (function () {
-  const REPO = "https://github.com/lifedever/paperbox";
-  const META = REPO + "/releases/latest/download/latest.json";
+  const BASE = "https://dl.lifedever.com/paperbox";
+  const META = BASE + "/latest.json";
   const fileFor = (plat, v) =>
-    plat === "win" ? `${REPO}/releases/download/v${v}/Paperbox_${v}_x64-setup.exe`
-                   : `${REPO}/releases/download/v${v}/Paperbox_${v}_aarch64.dmg`;
+    plat === "win" ? `${BASE}/paperbox-${v}-x64-setup.exe`
+                   : `${BASE}/paperbox-${v}-arm64.dmg`;
 
   function detectOS() {
     const u = navigator.userAgent;
