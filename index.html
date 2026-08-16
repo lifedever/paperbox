@@ -20,19 +20,6 @@
   --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-.first-open{max-width:560px;margin:22px auto 0;padding:18px 20px;text-align:left;
-  background:var(--card);border:1px solid var(--line);border-radius:14px}
-.first-open h4{margin:0 0 8px;font-size:15px;letter-spacing:.01em}
-.first-open p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.7}
-.fo-cmd{display:flex;align-items:center;gap:10px;margin:12px 0 10px;padding:10px 12px;
-  background:var(--paper-deep);border-radius:9px}
-.fo-cmd code{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--ink);
-  overflow-x:auto;white-space:nowrap}
-.fo-copy{flex:none;padding:5px 12px;font-size:12.5px;border-radius:7px;cursor:pointer;
-  border:1px solid var(--line);background:var(--card);color:var(--ink-soft);transition:all .15s}
-.fo-copy:hover{color:var(--ink);border-color:var(--ink-faint)}
-.fo-alt{margin-top:2px !important}
-.fo-warn{color:var(--ink);font-weight:500}
 
 body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.75;-webkit-font-smoothing:antialiased}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-index:0;
@@ -195,18 +182,6 @@ footer a{color:var(--ink-soft)}
     <a class="btn ghost" href="#features">看看能做什么</a>
   </div>
   <p class="cta-note" id="dlNote">macOS · Windows · Linux</p>
-  <div class="first-open" id="firstOpen" hidden>
-    <h4>Mac 首次打开，需要放行一次</h4>
-    <p>纸匣还没做 Apple 公证，macOS 会先拦一道，提示「已损坏」或「无法验证开发者」。
-      这不是文件坏了，把安装包拖进「应用程序」后，用下面任意一种方式放行，一次就好。</p>
-    <div class="fo-cmd">
-      <code id="foCmd">xattr -cr /Applications/Paperbox.app</code>
-      <button class="fo-copy" id="foCopy" type="button">复制</button>
-    </div>
-    <p class="fo-alt">打开「终端」粘贴执行即可，这行命令只清除浏览器下载时打上的隔离标记，不改动应用本身。<br>
-      也可以走：<b>系统设置 → 隐私与安全性 → 向下滚动 → 仍要打开</b>。<br>
-      <span class="fo-warn">macOS 15 起，老办法「右键 → 打开」已经不管用了，用上面两种。</span></p>
-  </div>
   <div class="shot"><img src="assets/shot-stamp.png" alt="纸匣 Paperbox 界面"></div>
 </div>
 
@@ -323,11 +298,8 @@ footer a{color:var(--ink-soft)}
       <p>压缩会按你设定的目标体积自动搜索质量档位，体积压得越狠画质损失越大，这是无法避免的取舍。纯文字类 PDF 可压缩空间有限，软件会如实告知结果。</p>
     </details>
     <details open>
-      <summary>macOS 提示「已损坏，无法打开」怎么办？</summary>
-      <p>这不是文件损坏，是 macOS 对未做 Apple 公证的应用的默认拦截。先把 Paperbox 拖进「应用程序」，再任选一种放行：<br>
-      ① 打开「终端」执行 <code>xattr -cr /Applications/Paperbox.app</code>，然后正常双击打开。这行命令只清除浏览器下载时打上的隔离标记，不修改应用本身；<br>
-      ② <b>系统设置 → 隐私与安全性</b>，向下滚动找到关于 Paperbox 的提示，点「仍要打开」。<br>
-      注意：<b>macOS 15 起「右键 → 打开」已经失效</b>，只有 macOS 14 及更早版本适用。DMG 里附了同样的说明，后续补上 Apple 公证后就不需要这步了。</p>
+      <summary>Mac 上第一次打开被系统拦住了？</summary>
+      <p>macOS 对所有从网页下载的应用都会做一次安全检查，第一次打开需要放行一下，之后就和普通软件一样。安装包里附了「安装说明」，照着做即可，只需第一次。</p>
     </details>
     <details>
       <summary>Windows 提示「Windows 已保护你的电脑」？</summary>
@@ -431,7 +403,6 @@ const LINKS = { xianyu: "" };
         alert("这个平台的 " + v + " 安装包还在构建中，通常几十分钟内就绪，请稍后再来。");
         return;
       }
-      if (plat === "mac-arm" || plat === "mac-intel") showFirstOpen();
       trigger(url);
     } catch (e) {
       alert("暂时无法获取下载链接（可能还没有发布版本或网络异常），请稍后重试。");
@@ -439,21 +410,6 @@ const LINKS = { xianyu: "" };
       if (btn && old != null) btn.textContent = old;
       busy = false;
     }
-  }
-
-  // Mac 首次打开说明：检测到 macOS 就常驻展开；其他平台点了 mac 包也展开
-  const fo = document.getElementById("firstOpen");
-  function showFirstOpen() { if (fo) fo.hidden = false; }
-  if (fo && sys === "mac") showFirstOpen();
-  const foCopy = document.getElementById("foCopy");
-  if (foCopy) {
-    foCopy.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(document.getElementById("foCmd").textContent.trim());
-        foCopy.textContent = "已复制";
-        setTimeout(() => { foCopy.textContent = "复制"; }, 1600);
-      } catch (_) { foCopy.textContent = "请手动复制"; }
-    });
   }
 
   const main = document.getElementById("dlMain");
