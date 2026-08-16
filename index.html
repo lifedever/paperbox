@@ -9,6 +9,7 @@
 <meta property="og:title" content="纸匣 Paperbox — 本地 PDF 工具箱">
 <meta property="og:description" content="合并、拆分、转换、OCR、压缩、水印、盖章，处理全程在本机。">
 <meta property="og:image" content="assets/shot-stamp.png">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="assets/icon.png">
 <style>
 :root{
@@ -16,9 +17,35 @@
   --ink:#211f1a; --ink-soft:#6f6a5e; --ink-faint:#a39d8e;
   --seal:#c43d1b; --seal-deep:#a72f12; --seal-wash:rgba(196,61,27,.08);
   --line:rgba(33,31,26,.12); --line-soft:rgba(33,31,26,.07); --ok:#4a7c46;
+  --header-bg:rgba(245,242,234,.86);
+  --noise:0.035; --noise-rgb:"0 0 0 0 0.13 0 0 0 0 0.12 0 0 0 0 0.10";
   --serif:"Songti SC",serif;
   --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
 }
+
+/* 深色模式跟随系统。不是简单反色：纸的暖调保留（偏暖的近黑而非纯黑），
+   朱红要提亮一档，否则在暗底上会发闷、对比度不够。 */
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#171614; --paper-deep:#1f1d1a; --card:#232019;
+    --ink:#f1ece2; --ink-soft:#a49d8e; --ink-faint:#6f6a5e;
+    --seal:#e2603c; --seal-deep:#c94b2a; --seal-wash:rgba(226,96,60,.14);
+    --line:rgba(241,236,226,.14); --line-soft:rgba(241,236,226,.075);
+    --ok:#6faa68;
+    --header-bg:rgba(23,22,20,.86);
+  }
+  /* 纸纹在暗底上要换成亮色噪点，否则等于没有 */
+  body::after{opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 0.97 0 0 0 0 0.92 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)'/%3E%3C/svg%3E")}
+  /* 浅色投影在暗底上看不见，改用更深的投影拉开层次 */
+  .card{box-shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.28)}
+  .card:hover{box-shadow:0 12px 30px rgba(0,0,0,.42)}
+  .shot img{box-shadow:0 30px 80px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.4)}
+  .dl-menu{box-shadow:0 14px 40px rgba(0,0,0,.5)}
+  /* 截图是浅色界面，暗底上直接贴会像一块高亮板，压一点亮度并加描边收边 */
+  .shot img,.card img{filter:brightness(.94)}
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
 
 body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.75;-webkit-font-smoothing:antialiased}
@@ -29,7 +56,7 @@ a{color:inherit}
 
 /* 顶栏（结构对齐 markify） */
 header{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);
-  background:rgba(245,242,234,.86);border-bottom:1px solid var(--line-soft)}
+  background:var(--header-bg);border-bottom:1px solid var(--line-soft)}
 nav.wrap{display:flex;align-items:center;gap:22px;height:62px}
 .brand{display:flex;align-items:center;gap:9px;font-family:var(--serif);font-weight:700;
   font-size:17px;text-decoration:none;white-space:nowrap}
