@@ -180,7 +180,7 @@ footer a{color:var(--ink-soft)}
     </div>
     <a class="btn ghost" href="#features">看看能做什么</a>
   </div>
-  <p class="cta-note" id="dlNote">macOS 12+</p>
+  <p class="cta-note" id="dlNote">macOS · Windows · Linux</p>
   <div class="shot"><img src="assets/shot-stamp.png" alt="纸匣 Paperbox 界面"></div>
 </div>
 
@@ -296,9 +296,20 @@ footer a{color:var(--ink-soft)}
       <summary>压缩会不会把文件弄糊？</summary>
       <p>压缩会按你设定的目标体积自动搜索质量档位，体积压得越狠画质损失越大，这是无法避免的取舍。纯文字类 PDF 可压缩空间有限，软件会如实告知结果。</p>
     </details>
+    <details open>
+      <summary>macOS 提示「已损坏，无法打开」怎么办？</summary>
+      <p>这不是文件损坏，是 macOS 对未做 Apple 公证的应用的默认拦截。两种处理方式：<br>
+      ① 在「应用程序」里找到 Paperbox，<b>右键（或 Control+单击）→ 打开</b>，在提示里再点一次「打开」，之后就能正常双击了；<br>
+      ② 若仍提示已损坏，打开「终端」执行 <code>xattr -cr /Applications/Paperbox.app</code>，这行命令只清除浏览器下载时打的隔离标记，不修改应用本身。<br>
+      DMG 里附了同样的说明。后续会补上 Apple 公证，届时不再需要这步。</p>
+    </details>
     <details>
-      <summary>支持 Windows 吗？</summary>
-      <p>目前提供 macOS 版（Apple 芯片，macOS 12 及以上）。Windows 版在规划中。</p>
+      <summary>Windows 提示「Windows 已保护你的电脑」？</summary>
+      <p>SmartScreen 对下载量还不多的新程序会默认拦一道。点窗口左下角「更多信息」→「仍要运行」即可，只需第一次这样。</p>
+    </details>
+    <details>
+      <summary>支持哪些系统？</summary>
+      <p>支持 macOS 14+（Apple 芯片与 Intel）、Windows 10/11 64 位、Linux x86_64（AppImage）。其中扫描件转文字版目前仅 macOS 可用，Windows/Linux 版的识别引擎正在接入。</p>
     </details>
   </div>
 </section>
@@ -306,7 +317,7 @@ footer a{color:var(--ink-soft)}
 <footer>
   <div class="wrap">
     <p>纸匣 Paperbox · 本地 PDF 工具箱</p>
-    <p class="sys-req">macOS 12+ · Apple 芯片　|　<a href="#privacy">隐私说明</a>　|　<a href="#" data-xianyu>闲鱼店铺</a>　|　<a href="https://github.com/lifedever/paperbox/releases" target="_blank" rel="noopener">全部版本</a></p>
+    <p class="sys-req">macOS 14+ · Windows · Linux　|　<a href="#privacy">隐私说明</a>　|　<a href="#" data-xianyu>闲鱼店铺</a>　|　<a href="https://github.com/lifedever/paperbox/releases" target="_blank" rel="noopener">全部版本</a></p>
   </div>
 </footer>
 
@@ -320,14 +331,18 @@ const LINKS = { xianyu: "" };
 (function () {
   const BASE = "https://dl.lifedever.com/paperbox";
   const META = BASE + "/latest.json";
-  const fileFor = (plat, v) =>
-    plat === "win" ? `${BASE}/paperbox-${v}-x64-setup.exe`
-                   : `${BASE}/paperbox-${v}-arm64.dmg`;
+  const fileFor = (plat, v) => ({
+    "mac-arm": `${BASE}/paperbox-${v}-arm64.dmg`,
+    "mac-intel": `${BASE}/paperbox-${v}-x64.dmg`,
+    "win": `${BASE}/paperbox-${v}-x64-setup.exe`,
+    "linux": `${BASE}/paperbox-${v}-x64.AppImage`,
+  }[plat]);
 
   function detectOS() {
     const u = navigator.userAgent;
     if (/Windows|Win64|Win32/i.test(u)) return "win";
     if (/Mac/i.test(navigator.platform || "") || /Mac OS X/i.test(u)) return "mac";
+    if (/Linux|X11/i.test(u) && !/Android/i.test(u)) return "linux";
     return "other";
   }
   // 浏览器对 Intel/ARM Mac 都报 MacIntel；用 WebGL 渲染器名兜底，测不出默认 arm64
@@ -360,11 +375,14 @@ const LINKS = { xianyu: "" };
   const sys = detectOS();
   const arch = sys === "mac" ? macArch() : "arm64";
   const plats = [
-    { id: "mac-arm",   label: "macOS · Apple 芯片", meta: "macOS 12+", ready: true, dl: "mac" },
-    { id: "mac-intel", label: "macOS · Intel 芯片", meta: "暂不支持",   ready: false },
-    { id: "win",       label: "Windows",            meta: "开发中",     ready: false },
+    { id: "mac-arm",   label: "macOS · Apple 芯片", meta: "macOS 14+", ready: true, dl: "mac-arm" },
+    { id: "mac-intel", label: "macOS · Intel 芯片", meta: "macOS 14+", ready: true, dl: "mac-intel" },
+    { id: "win",       label: "Windows 10/11",      meta: "64 位",     ready: true, dl: "win" },
+    { id: "linux",     label: "Linux (AppImage)",   meta: "x86_64",    ready: true, dl: "linux" },
   ];
-  const curId = sys === "win" ? "win" : (arch === "x64" ? "mac-intel" : "mac-arm");
+  const curId = sys === "win" ? "win"
+              : sys === "linux" ? "linux"
+              : (arch === "x64" ? "mac-intel" : "mac-arm");
   const primary = plats.find((p) => p.id === curId && p.ready) || plats[0];
 
   let busy = false;
