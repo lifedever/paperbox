@@ -27,7 +27,7 @@
    朱红要提亮一档，否则在暗底上会发闷、对比度不够。 */
 @media (prefers-color-scheme: dark){
   :root{
-    --paper:#171614; --paper-deep:#1f1d1a; --card:#232019;
+    --paper:#141311; --paper-deep:#1c1a17; --card:#242119;
     --ink:#f1ece2; --ink-soft:#a49d8e; --ink-faint:#6f6a5e;
     --seal:#e2603c; --seal-deep:#c94b2a; --seal-wash:rgba(226,96,60,.14);
     --line:rgba(241,236,226,.14); --line-soft:rgba(241,236,226,.075);
@@ -42,6 +42,10 @@
   .card:hover{box-shadow:0 12px 30px rgba(0,0,0,.42)}
   .shot img{box-shadow:0 30px 80px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.4)}
   .dl-menu{box-shadow:0 14px 40px rgba(0,0,0,.5)}
+  /* 暗部里相邻段落的色差会被压缩，靠底色分不开，补一道细线明确分段 */
+  section + section{border-top:1px solid var(--line-soft)}
+  .privacy{border-top-color:var(--line);border-bottom-color:var(--line)}
+  footer{border-top:1px solid var(--line-soft)}
   /* 截图是浅色界面，暗底上直接贴会像一块高亮板，压一点亮度并加描边收边 */
   .shot img,.card img{filter:brightness(.94)}
 }
@@ -278,7 +282,7 @@ footer a{color:var(--ink-soft)}
       </div>
       <div class="priv-item">
         <h4>识别也在本机</h4>
-        <p>文字识别用系统自带的引擎，内容不出这台电脑。</p>
+        <p>文字识别全程在本机完成，内容不出这台电脑。</p>
       </div>
     </div>
   </div>
