@@ -8,7 +8,7 @@
 <meta name="keywords" content="PDF 工具箱,PDF 合并,图片转PDF,PDF转图片,PDF压缩,PDF加水印,PDF盖章,扫描件转文字,本地处理,不上传,Mac PDF 软件">
 <meta property="og:title" content="纸匣 Paperbox — 本地 PDF 工具箱">
 <meta property="og:description" content="合并、拆分、转换、OCR、压缩、水印、盖章，处理全程在本机。">
-<meta property="og:image" content="assets/shot-stamp.png">
+<meta property="og:image" content="https://www.lifedever.com/paperbox/assets/shot-1.jpg">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="assets/icon.png">
 <style>
@@ -17,7 +17,7 @@
   --ink:#211f1a; --ink-soft:#6f6a5e; --ink-faint:#a39d8e;
   --seal:#c43d1b; --seal-deep:#a72f12; --seal-wash:rgba(196,61,27,.08);
   --line:rgba(33,31,26,.12); --line-soft:rgba(33,31,26,.07); --ok:#4a7c46;
-  --header-bg:rgba(245,242,234,.86);
+  --header-bg:rgba(245,242,234,.86); --divider:rgba(33,31,26,.07);
   --noise:0.035; --noise-rgb:"0 0 0 0 0.13 0 0 0 0 0.12 0 0 0 0 0.10";
   --serif:"Songti SC",serif;
   --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
@@ -32,7 +32,7 @@
     --seal:#e2603c; --seal-deep:#c94b2a; --seal-wash:rgba(226,96,60,.14);
     --line:rgba(241,236,226,.14); --line-soft:rgba(241,236,226,.075);
     --ok:#6faa68;
-    --header-bg:rgba(23,22,20,.86);
+    --header-bg:rgba(20,19,17,.86); --divider:rgba(241,236,226,.14);
   }
   /* 纸纹在暗底上要换成亮色噪点，否则等于没有 */
   body::after{opacity:.5;
@@ -42,10 +42,7 @@
   .card:hover{box-shadow:0 12px 30px rgba(0,0,0,.42)}
   .shot img{box-shadow:0 30px 80px rgba(0,0,0,.55),0 2px 8px rgba(0,0,0,.4)}
   .dl-menu{box-shadow:0 14px 40px rgba(0,0,0,.5)}
-  /* 暗部里相邻段落的色差会被压缩，靠底色分不开，补一道细线明确分段 */
-  section + section{border-top:1px solid var(--line-soft)}
-  .privacy{border-top-color:var(--line);border-bottom-color:var(--line)}
-  footer{border-top:1px solid var(--line-soft)}
+  .privacy{border-top-color:var(--divider);border-bottom-color:var(--divider)}
   /* 截图是浅色界面，暗底上直接贴会像一块高亮板，压一点亮度并加描边收边 */
   .shot img,.card img{filter:brightness(.94)}
 }
@@ -55,7 +52,7 @@
 body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.75;-webkit-font-smoothing:antialiased}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;z-index:0;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.13 0 0 0 0 0.12 0 0 0 0 0.10 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)'/%3E%3C/svg%3E")}
-.wrap{max-width:1080px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+.wrap{max-width:1080px;margin:0 auto;padding-left:24px;padding-right:24px;position:relative;z-index:1}
 a{color:inherit}
 
 /* 顶栏（结构对齐 markify） */
@@ -106,12 +103,36 @@ h1 em{font-style:normal;color:var(--seal)}
 .sub{font-size:clamp(15px,2vw,17.5px);color:var(--ink-soft);margin:20px auto 30px;max-width:640px}
 .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 .cta-note{font-size:12.5px;color:var(--ink-faint);margin-top:14px}
-.shot{margin:46px auto 0;max-width:1000px;border-radius:14px;overflow:hidden;
+.shot{position:relative;margin:46px auto 0;max-width:1000px;border-radius:14px;overflow:hidden;
   box-shadow:0 30px 80px rgba(33,31,26,.24),0 2px 8px rgba(33,31,26,.12);border:1px solid var(--line-soft)}
-.shot img{width:100%;display:block}
+.shot-track{display:flex;transition:transform .5s cubic-bezier(.22,.7,.25,1)}
+.shot-slide{flex:0 0 100%;margin:0}
+.shot img{width:100%;height:auto;display:block;aspect-ratio:2000/1428}
+/* 左右箭头：默认淡出，指针悬停才浮现，不抢截图本身 */
+.shot-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;
+  display:grid;place-items:center;border:none;border-radius:50%;cursor:pointer;
+  font-size:20px;line-height:1;color:#fff;background:rgba(20,19,17,.42);
+  backdrop-filter:blur(6px);opacity:0;transition:opacity .2s,background .15s;z-index:2}
+.shot:hover .shot-nav{opacity:1}
+.shot-nav:hover{background:rgba(20,19,17,.68)}
+.shot-nav.prev{left:12px}
+.shot-nav.next{right:12px}
+.shot-dots{position:absolute;left:0;right:0;bottom:12px;display:flex;gap:7px;
+  justify-content:center;z-index:2}
+.shot-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45);
+  cursor:pointer;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.shot-dots i.on{width:20px;border-radius:4px;background:#fff}
+/* 触屏上没有 hover，箭头常驻 */
+@media (hover:none){.shot-nav{opacity:.85}}
+/* 尊重系统的「减少动态效果」设置 */
+@media (prefers-reduced-motion:reduce){.shot-track{transition:none}}
 
 /* 通用区块 */
-section{padding:64px 0}
+section{padding:72px 0}
+/* 相邻段落之间给一道细线。只靠留白的话，同底色的两段会连成一整块，
+   深色下尤其明显。 */
+section + section{border-top:1px solid var(--divider)}
+footer{border-top:1px solid var(--divider)}
 .sec-title{font-family:var(--serif);font-size:clamp(24px,3.4vw,32px);font-weight:700;text-align:center}
 .sec-sub{text-align:center;color:var(--ink-soft);font-size:14.5px;margin:12px auto 40px;max-width:620px}
 
@@ -213,7 +234,15 @@ footer a{color:var(--ink-soft)}
     <a class="btn ghost" href="#features">看看能做什么</a>
   </div>
   <p class="cta-note" id="dlNote">macOS · Windows · Linux</p>
-  <div class="shot"><img src="assets/shot-stamp.png" alt="纸匣 Paperbox 界面"></div>
+  <div class="shot" id="shot">
+    <div class="shot-track" id="shotTrack">
+      <figure class="shot-slide"><img src="assets/shot-1.jpg" alt="合并与整理：把多个 PDF 和图片拼成一个文件" width="2000" height="1428"></figure>
+      <figure class="shot-slide"><img src="assets/shot-2.jpg" alt="拆分与抽页：点缩略图选页，每份用颜色区分" loading="lazy" width="2000" height="1428"></figure>
+    </div>
+    <button class="shot-nav prev" id="shotPrev" type="button" aria-label="上一张">‹</button>
+    <button class="shot-nav next" id="shotNext" type="button" aria-label="下一张">›</button>
+    <div class="shot-dots" id="shotDots"></div>
+  </div>
 </div>
 
 <section id="features" class="wrap">
@@ -351,6 +380,53 @@ footer a{color:var(--ink-soft)}
 </footer>
 
 <script>
+
+// ── 首屏截图轮播。自动播放，但鼠标停留、页面切到后台、
+//    或系统开了「减少动态效果」时都不动，避免打扰阅读。
+(function () {
+  const shot = document.getElementById("shot");
+  const track = document.getElementById("shotTrack");
+  const dots = document.getElementById("shotDots");
+  if (!shot || !track) return;
+  const n = track.children.length;
+  if (n < 2) return;
+  let idx = 0, timer = null, hover = false;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement("i");
+    d.addEventListener("click", () => { go(i); restart(); });
+    dots.appendChild(d);
+  }
+  function go(i) {
+    idx = (i + n) % n;
+    track.style.transform = `translateX(${-idx * 100}%)`;
+    [...dots.children].forEach((d, k) => d.classList.toggle("on", k === idx));
+  }
+  function next() { go(idx + 1); }
+  function restart() {
+    clearInterval(timer);
+    if (reduce) return;
+    timer = setInterval(() => { if (!hover && !document.hidden) next(); }, 5200);
+  }
+  document.getElementById("shotPrev").addEventListener("click", () => { go(idx - 1); restart(); });
+  document.getElementById("shotNext").addEventListener("click", () => { go(idx + 1); restart(); });
+  shot.addEventListener("mouseenter", () => { hover = true; });
+  shot.addEventListener("mouseleave", () => { hover = false; });
+
+  // 触屏左右滑动
+  let x0 = null;
+  shot.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  shot.addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 40) { go(idx + (dx < 0 ? 1 : -1)); restart(); }
+    x0 = null;
+  }, { passive: true });
+
+  go(0);
+  restart();
+})();
 // 店铺链接（填入后购买按钮生效）
 const LINKS = { xianyu: "" };
 
