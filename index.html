@@ -233,7 +233,7 @@ footer a{color:var(--ink-soft)}
     </div>
     <a class="btn ghost" href="#features">看看能做什么</a>
   </div>
-  <p class="cta-note" id="dlNote">macOS · Windows · Linux</p>
+  <p class="cta-note" id="dlNote">macOS · Windows</p>
   <div class="shot" id="shot">
     <div class="shot-track" id="shotTrack">
       <figure class="shot-slide"><img src="assets/shot-1.jpg" alt="合并与整理：把多个 PDF 和图片拼成一个文件" width="2000" height="1428"></figure>
@@ -367,7 +367,7 @@ footer a{color:var(--ink-soft)}
     </details>
     <details>
       <summary>支持哪些系统？</summary>
-      <p>支持 macOS 14+（Apple 芯片与 Intel）、Windows 10/11 64 位、Linux x86_64（AppImage，需 Ubuntu 24.04 / Fedora 39 或更新的发行版）。三个平台功能完全一致，八项功能都可用。</p>
+      <p>支持 macOS 14+（Apple 芯片与 Intel）与 Windows 10/11 64 位，两个平台功能完全一致，八项功能都可用。</p>
     </details>
   </div>
 </section>
@@ -375,7 +375,7 @@ footer a{color:var(--ink-soft)}
 <footer>
   <div class="wrap">
     <p>纸匣 Paperbox · 本地 PDF 工具箱</p>
-    <p class="sys-req">macOS 14+ · Windows · Linux　|　<a href="#privacy">隐私说明</a>　|　<a href="#" data-xianyu>闲鱼店铺</a>　|　<a href="https://github.com/lifedever/paperbox/releases" target="_blank" rel="noopener">全部版本</a></p>
+    <p class="sys-req">macOS 14+ · Windows　|　<a href="#privacy">隐私说明</a>　|　<a href="#" data-xianyu>闲鱼店铺</a>　|　<a href="https://github.com/lifedever/paperbox/releases" target="_blank" rel="noopener">全部版本</a></p>
   </div>
 </footer>
 
@@ -440,7 +440,6 @@ const LINKS = { xianyu: "" };
     "mac-arm": `${BASE}/paperbox-${v}-arm64.dmg`,
     "mac-intel": `${BASE}/paperbox-${v}-x64.dmg`,
     "win": `${BASE}/paperbox-${v}-x64-setup.exe`,
-    "linux": `${BASE}/paperbox-${v}-x64.AppImage`,
   }[plat]);
 
   function detectOS() {
@@ -483,10 +482,9 @@ const LINKS = { xianyu: "" };
     { id: "mac-arm",   label: "macOS · Apple 芯片", meta: "macOS 14+", ready: true, dl: "mac-arm" },
     { id: "mac-intel", label: "macOS · Intel 芯片", meta: "macOS 14+", ready: true, dl: "mac-intel" },
     { id: "win",       label: "Windows 10/11",      meta: "64 位",     ready: true, dl: "win" },
-    { id: "linux",     label: "Linux (AppImage)",   meta: "x86_64",    ready: true, dl: "linux" },
   ];
+  // Linux 暂不发版：Linux 访客也给一个能用的默认项，不留死选项
   const curId = sys === "win" ? "win"
-              : sys === "linux" ? "linux"
               : (arch === "x64" ? "mac-intel" : "mac-arm");
   const primary = plats.find((p) => p.id === curId && p.ready) || plats[0];
 
