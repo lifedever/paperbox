@@ -428,7 +428,49 @@ footer a{color:var(--ink-soft)}
   restart();
 })();
 // 店铺链接（填入后购买按钮生效）
-const LINKS = { xianyu: "" };
+// ── 购买入口：链接与口令都从 license-server 动态拉取（该接口已开跨域，
+//    就是为官网准备的）。写死在这里的话，换店铺要同时改官网和后台两处，
+//    迟早不同步——之前这个常量甚至压根没被用过，按钮点了没反应。──
+(function () {
+  const API = "https://license-server.lifedever.com/api/v1/purchase/paperbox";
+  const links = document.querySelectorAll("[data-xianyu]");
+  if (!links.length) return;
+
+  // 拉不到之前先按不可用处理，避免点了没反应还以为页面坏了
+  links.forEach((a) => {
+    a.setAttribute("aria-disabled", "true");
+    a.addEventListener("click", (e) => {
+      if (a.getAttribute("aria-disabled") === "true") {
+        e.preventDefault();
+        alert("店铺信息加载中，请稍后再试；也可以在闲鱼搜索「纸匣 PDF 工具箱」。");
+      }
+    });
+  });
+
+  fetch(API, { cache: "no-store" })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      if (!d || d.ok !== true || !d.buy_url) return;
+      links.forEach((a) => {
+        a.href = d.buy_url;
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.removeAttribute("aria-disabled");
+      });
+      // 有口令就在购买区补一行，方便在闲鱼 App 里粘贴打开
+      if (d.buy_token) {
+        const box = document.querySelector("[data-xianyu]")?.closest(".pricing");
+        if (box) {
+          const p = document.createElement("p");
+          p.className = "plan-note";
+          p.style.wordBreak = "break-all";
+          p.textContent = "打不开链接？复制这段口令，打开闲鱼：" + d.buy_token;
+          box.appendChild(p);
+        }
+      }
+    })
+    .catch(() => { /* 离线或接口异常：保持不可用状态，不留死链 */ });
+})();
 
 // ── 下载：点击时实时拉 latest.json 取版本再触发下载。
 //    按钮不挂真实 href/download —— 否则版本没取到时点击会把网页本身存成 .html。
