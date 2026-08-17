@@ -127,6 +127,20 @@ h1 em{font-style:normal;color:var(--seal)}
 /* 尊重系统的「减少动态效果」设置 */
 @media (prefers-reduced-motion:reduce){.shot-track{transition:none}}
 
+/* 闲鱼口令：带边框的区块 + 一键复制。口令整段很长，平铺成文字既难读也难选 */
+.token-box{margin-top:14px;text-align:left;border:1px solid var(--line);
+  border-radius:12px;background:var(--paper-deep);overflow:hidden}
+.token-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 12px;border-bottom:1px solid var(--line-soft);font-size:12px;color:var(--ink-soft)}
+.token-copy{flex:none;padding:5px 13px;font-size:12.5px;font-weight:600;cursor:pointer;
+  border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);
+  transition:all .15s}
+.token-copy:hover{border-color:var(--seal);color:var(--seal)}
+.token-copy.ok{background:var(--seal);border-color:var(--seal);color:#fff}
+.token-text{padding:11px 12px;font-size:12px;line-height:1.65;color:var(--ink-soft);
+  word-break:break-all;max-height:88px;overflow-y:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
 /* 通用区块 */
 section{padding:72px 0}
 /* 相邻段落之间给一道细线。只靠留白的话，同底色的两段会连成一整块，
@@ -457,15 +471,43 @@ footer a{color:var(--ink-soft)}
         a.rel = "noopener";
         a.removeAttribute("aria-disabled");
       });
-      // 有口令就在购买区补一行，方便在闲鱼 App 里粘贴打开
+      // 有口令就在购买区补一块：口令整段很长，平铺成一行文字会又挤又难选，
+      // 做成带边框的区块 + 一键复制，用户不用手动圈选。
       if (d.buy_token) {
         const box = document.querySelector("[data-xianyu]")?.closest(".pricing");
-        if (box) {
-          const p = document.createElement("p");
-          p.className = "plan-note";
-          p.style.wordBreak = "break-all";
-          p.textContent = "打不开链接？复制这段口令，打开闲鱼：" + d.buy_token;
-          box.appendChild(p);
+        if (box && !box.querySelector(".token-box")) {
+          const wrap = document.createElement("div");
+          wrap.className = "token-box";
+          const head = document.createElement("div");
+          head.className = "token-head";
+          const lab = document.createElement("span");
+          lab.textContent = "打不开链接？复制口令，打开闲鱼";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "token-copy";
+          btn.textContent = "复制口令";
+          btn.addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(d.buy_token);
+              btn.textContent = "已复制";
+              btn.classList.add("ok");
+              setTimeout(() => { btn.textContent = "复制口令"; btn.classList.remove("ok"); }, 1800);
+            } catch (_) {
+              // 非 HTTPS 或权限被拒时退回全选，让用户自己按 Cmd+C
+              const r = document.createRange();
+              r.selectNodeContents(wrap.querySelector(".token-text"));
+              const sel = window.getSelection();
+              sel.removeAllRanges(); sel.addRange(r);
+              btn.textContent = "已选中，按 ⌘C";
+              setTimeout(() => { btn.textContent = "复制口令"; }, 2200);
+            }
+          });
+          head.append(lab, btn);
+          const text = document.createElement("div");
+          text.className = "token-text";
+          text.textContent = d.buy_token;
+          wrap.append(head, text);
+          box.appendChild(wrap);
         }
       }
     })
